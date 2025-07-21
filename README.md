@@ -21,7 +21,7 @@ LM-CLI is a powerful command-line interface (CLI) tool built with Bun and TypeSc
 
 1.  **Clone the repository:**
     ```bash
-    git clone <YOUR_REPOSITORY_URL_HERE>
+    git clone https://github.com/Clebson-Torres/lm-cli.git
     cd lm-cli
     ```
 
