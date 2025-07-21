@@ -22,7 +22,7 @@ class CLI {
             .description('CLI avançado para LM Studio com arquitetura de plugins')
             .version('2.0.0')
             .action(async () => {
-                // Se nenhum comando for especificado, entra no modo interativo
+                
                 await interactiveMode(this.client);
             });
         

@@ -1,10 +1,7 @@
-
-
 import { CLIPlugin } from './plugin.interface';
 import { LMStudioClient } from '../lm-client';
 import { join } from 'path';
 
-// Função para limpar a resposta do LLM, removendo ```
 function cleanCodeResponse(text: string): string {
     const lines = text.split('\n');
     if (lines.length > 1 && lines[0].trim().startsWith('```')) {
@@ -13,11 +10,10 @@ function cleanCodeResponse(text: string): string {
     return text;
 }
 
-// A lógica real do comando
 async function modifyAction(client: LMStudioClient, args: any[]) {
     const [filePath, instruction] = args;
     if (!filePath || !instruction) {
-        console.error('\n❌ Erro: O caminho do arquivo e a instrução são obrigatórios.');
+        console.error('\n❌ Error: File path and instruction are required.');
         return;
     }
 
@@ -26,49 +22,45 @@ async function modifyAction(client: LMStudioClient, args: any[]) {
         const file = Bun.file(resolvedPath);
         
         if (!await file.exists()) {
-            console.error(`\n❌ Erro: Arquivo não encontrado em '${resolvedPath}'.`);
+            console.error(`\n❌ Error: File not found at '${resolvedPath}'.`);
             return;
         }
 
         const content = await file.text();
         const backupPath = `${resolvedPath}.backup`;
 
-        // Criar backup
         await Bun.write(backupPath, content);
-        console.log(`\n💾 Backup do arquivo original criado em: ${backupPath}`);
+        console.log(`\n💾 Backup of original file created at: ${backupPath}`);
 
-        const systemPrompt = 'Você é um programador expert. Modifique o código fornecido para atender à instrução, mantendo a funcionalidade e as boas práticas.';
-
+        const systemPrompt = 'You are an expert programmer. Modify the provided code to meet the instruction, maintaining functionality and good practices.';
         const message = [
-            `Modifique o seguinte código conforme a instrução: "${instruction}"`,
+            `Modify the following code according to the instruction: "${instruction}"`,
             '',
-            `Código atual no arquivo '${filePath}':`,
+            `Current code in file '${filePath}':`,
             '```',
             content,
             '```',
             '',
-            'Forneça APENAS o código modificado, sem explicações ou texto adicional.'
+            'Provide ONLY the modified code, no explanations or additional text.'
         ].join('\n');
 
-        console.log(`\n✏️  Modificando ${filePath}...`);
+        console.log(`\n✏️  Modifying ${filePath}...`);
         let newContent = await client.sendMessage(message, systemPrompt);
         newContent = cleanCodeResponse(newContent);
 
         await Bun.write(resolvedPath, newContent);
-        console.log(`\n✅ Arquivo modificado com sucesso!`);
+        console.log(`\n✅ File modified successfully!`);
 
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        console.error(`\n❌ Erro na modificação:`, message);
+        console.error(`\n❌ Error modifying:`, message);
     }
 }
 
-// O objeto do plugin que exportamos
 const ModifyPlugin: CLIPlugin = {
     name: 'modify <file> <instruction>',
-    description: 'Modifica um arquivo existente com base em uma instrução.',
+    description: 'Modifies an existing file based on an instruction.',
     action: modifyAction
 };
 
 export default ModifyPlugin;
-

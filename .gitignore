@@ -32,3 +32,14 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# Backup files
+*.backup
+
+# Local configuration files (if applicable)
+.lmclirc
+.lmclirc.local
+
+# TypeScript build artifacts (redundant but explicit)
+*.js
+*.js.map

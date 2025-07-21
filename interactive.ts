@@ -3,13 +3,11 @@ import { stdin, stdout } from 'node:process';
 import { LMStudioClient } from './lm-client';
 import { readdir } from 'fs/promises';
 
-// Importa os plugins que definem os comandos
 import AnalyzePlugin from './plugins/analyze';
 import GeneratePlugin from './plugins/generate';
 import ModifyPlugin from './plugins/modify';
 import ExplainPlugin from './plugins/explain';
 
-// Mapeia os nomes dos comandos às suas implementações de plugin
 const commands = {
     analyze: AnalyzePlugin,
     generate: GeneratePlugin,
@@ -17,7 +15,6 @@ const commands = {
     explain: ExplainPlugin,
 };
 
-// Função auxiliar para listar arquivos no diretório atual
 async function listFiles(directory: string = '.'): Promise<string[]> {
     try {
         const items = await readdir(directory, { withFileTypes: true });
@@ -26,7 +23,7 @@ async function listFiles(directory: string = '.'): Promise<string[]> {
             .map(item => item.name)
             .sort();
     } catch (error) {
-        console.error('\n❌ Erro ao listar arquivos:', error);
+        console.error('\n❌ Error listing files:', error);
         return [];
     }
 }
@@ -48,10 +45,10 @@ export async function interactiveMode(client: LMStudioClient) {
     console.log(`🔌 ${message}\n`);
 
     if (!connected) {
-        console.log(`        Para configurar:
-        1. Abra o LM Studio
-        2. Carregue um modelo
-        3. Ative o 'Local Server' (porta 1234)
+        console.log(`        To set up:
+        1. Open LM Studio
+        2. Load a model
+        3. Enable 'Local Server' (port 1234)
         `);
         rl.close();
         return;
@@ -64,7 +61,6 @@ export async function interactiveMode(client: LMStudioClient) {
         try {
             const trimmedInput = input.trim();
 
-            // Se a entrada estiver vazia, apenas mostre o prompt novamente.
             if (!trimmedInput) {
                 rl.prompt();
                 return;
@@ -76,7 +72,7 @@ export async function interactiveMode(client: LMStudioClient) {
                 case 'quit':
                 case 'exit':
                 case 'q':
-                    console.log('Até logo! 👋');
+                    console.log('Goodbye! 👋');
                     rl.close();
                     break;
 
@@ -94,29 +90,26 @@ export async function interactiveMode(client: LMStudioClient) {
                 case 'ls':
                 case 'dir':
                     const files = await listFiles();
-                    console.log('\n📂 Arquivos disponíveis:\n');
-                    console.log(files.length ? files.join('\n') : 'Nenhum arquivo encontrado');
+                    console.log('\n📂 Available files:\n');
+                    console.log(files.length ? files.join('\n') : 'No files found');
                     break;
 
                 default:
                     const command = commands[commandName as keyof typeof commands];
                     if (command) {
-                        // Extrai argumentos e "falsas" opções para compatibilidade
-                        // O modo interativo não lida com opções como -l ou -o por enquanto
                         const commandArgs = trimmedInput.substring(commandName.length).trim().split(/\s+/);
                         await command.action(client, commandArgs, {});
                     } else if (trimmedInput) {
-                        console.log('\n💭 Processando como chat...');
+                        console.log('\n💭 Processing as chat...');
                         const response = await client.sendMessage(trimmedInput);
-                        console.log('\n🤖 Resposta:\n');
+                        console.log('\n🤖 Response:\n');
                         console.log(response);
                     } else {
-                        // Apenas pressionou Enter
                     }
                     break;
             }
         } catch (error) {
-            console.error('\n❌ Erro inesperado no modo interativo:', error);
+            console.error('\n❌ Unexpected error in interactive mode:', error);
         }
         rl.prompt();
     });
@@ -128,22 +121,21 @@ export async function interactiveMode(client: LMStudioClient) {
 
 function showHelp() {
     console.log(`
-    Comandos disponíveis:
+    Available Commands:
     
-    📁 Arquivos:
-    - analyze <arquivo>       Analisa um arquivo de código
-    - generate <descrição>    Gera código baseado na descrição
-    - modify <arquivo> <instrução>  Modifica um arquivo existente
-    - explain [diretório]     Analisa a estrutura do diretório
-    - list/ls                 Lista arquivos disponíveis
+    📁 Files:
+    - analyze <file>          Analyzes a code file
+    - generate <description>  Generates code based on description
+    - modify <file> <instruction> Modifies an existing file
+    - explain [directory]     Analyzes directory structure
+    - list/ls                 Lists available files
     
-    ⚙️  Utilitários:
-    - clear/cls               Limpa a tela
-    - help/h                  Mostra esta ajuda
-    - quit/exit/q             Sai do programa
+    ⚙️  Utilities:
+    - clear/cls               Clears the screen
+    - help/h                  Shows this help message
+    - quit/exit/q             Exits the program
     
     💬 Chat:
-    - <qualquer texto>        Envia mensagem direta ao LM Studio
+    - <any text>              Sends direct message to LM Studio
     `);
 }
-

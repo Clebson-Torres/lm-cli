@@ -1,10 +1,7 @@
-
-
 import { CLIPlugin, CommandOption } from './plugin.interface';
 import { LMStudioClient } from '../lm-client';
 import { join } from 'path';
 
-// Função para limpar a resposta do LLM, removendo ```
 function cleanCodeResponse(text: string): string {
     const lines = text.split('\n');
     if (lines.length > 1 && lines[0].trim().startsWith('```')) {
@@ -13,67 +10,64 @@ function cleanCodeResponse(text: string): string {
     return text;
 }
 
-// A lógica real do comando
 async function generateAction(client: LMStudioClient, args: any[], options: any) {
     const [description] = args;
     if (!description) {
-        console.error('\n❌ Erro: A descrição do código é obrigatória.');
+        console.error('\n❌ Error: Code description is required.');
         return;
     }
 
     try {
-        const systemPrompt = `Você é um programador expert em ${options.language}. Gere código limpo, funcional e bem documentado.`;
+        const systemPrompt = `You are an expert programmer in ${options.language}. Generate clean, functional, and well-documented code.`
 
         const message = [
-            `Crie um código ${options.language} para: ${description}`,
-            'Requisitos:',
-            '1. Código funcional e bem estruturado',
-            '2. Comentários explicativos',
-            '3. Tratamento de erros',
-            '4. Boas práticas de programação',
-            '5. Imports necessários',
+            `Create ${options.language} code for: ${description}`,
+            'Requirements:',
+            '1. Functional and well-structured code',
+            '2. Explanatory comments',
+            '3. Error handling',
+            '4. Good programming practices',
+            '5. Necessary imports',
             '',
-            'Forneça APENAS o código, sem explicações.'
+            'Provide ONLY the code, no explanations.'
         ].join('\n');
 
-        console.log('\n✨ Gerando código...');
+        console.log('\n✨ Generating code...');
         let code = await client.sendMessage(message, systemPrompt);
         code = cleanCodeResponse(code);
 
         if (options.output) {
             const outputPath = join(process.cwd(), options.output);
             await Bun.write(outputPath, code);
-            console.log(`\n✅ Código salvo em: ${outputPath}`);
+            console.log(`\n✅ Code saved to: ${outputPath}`);
         } else {
-            console.log('\n✨ Código gerado:\n');
+            console.log('\n✨ Generated code:\n');
             console.log(code);
         }
 
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        console.error(`\n❌ Erro na geração:`, message);
+        console.error(`\n❌ Error generating:`, message);
     }
 }
 
 const generateOptions: CommandOption[] = [
     {
         flags: '-l, --language <lang>',
-        description: 'Linguagem de programação a ser usada',
+        description: 'Programming language to use',
         defaultValue: 'typescript'
     },
     {
         flags: '-o, --output <file>',
-        description: 'Salvar o código gerado em um arquivo de saída'
+        description: 'Save generated code to an output file'
     }
 ];
 
-// O objeto do plugin que exportamos
 const GeneratePlugin: CLIPlugin = {
     name: 'generate <description>',
-    description: 'Gera código a partir de uma descrição textual.',
+    description: 'Generates code from a textual description.',
     options: generateOptions,
     action: generateAction
 };
 
 export default GeneratePlugin;
-
