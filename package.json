@@ -1,0 +1,20 @@
+{
+  "name": "lm-studio-cli",
+  "version": "1.0.0",
+  "description": "CLI para LM Studio com Bun",
+  "main": "index.ts",
+  "bin": {
+    "lmcli": "index.ts"
+  },
+  "scripts": {
+    "start": "bun run /index.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "commander": "^14.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.14",
+    "typescript": "^5.0.0"
+  }
+}
